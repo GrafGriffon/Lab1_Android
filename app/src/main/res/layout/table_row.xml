@@ -1,0 +1,13 @@
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView android:id="@+id/col1" android:text=""
+        android:textSize="16sp"
+        android:paddingRight="30dp"/>
+    <TextView android:id="@+id/col2" android:text=""
+        android:textSize="16sp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"/>
+    <TextView android:id="@+id/col3" android:text=""
+        android:textSize="16sp"
+        android:paddingLeft="30dp"/>
+</TableRow>
