@@ -14,6 +14,6 @@ public class InfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#0D4028")));
-        this.getSupportActionBar().setTitle("Лабораторная работа 1");
+        this.getSupportActionBar().setTitle("Лабораторная работа 2");
     }
 }
