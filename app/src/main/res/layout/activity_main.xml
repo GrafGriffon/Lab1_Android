@@ -27,8 +27,8 @@
 
     <Button
         android:id="@+id/button2"
-        android:layout_width="205dp"
-        android:layout_height="63dp"
+        android:layout_width="155dp"
+        android:layout_height="64dp"
         android:onClick="viewInfo"
         android:text="info"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -40,13 +40,13 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="205dp"
-        android:layout_height="63dp"
+        android:layout_width="155dp"
+        android:layout_height="64dp"
         android:onClick="viewSearch"
         android:text="Search"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/button2"
         app:layout_constraintTop_toBottomOf="@+id/scrollView2"
         app:layout_constraintVertical_bias="1.0" />
@@ -63,5 +63,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="100dp"
+        android:layout_height="64dp"
+        android:text="BYN"
+        android:onClick="updateCourse"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/button2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TableLayout;
@@ -56,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     private GestureDetectorCompat gd;
 
     String url = "https://fakestoreapi.com/products/";
+    String urlCourse = "https://www.nbrb.by/api/exrates/rates/840?parammode=1";
+    double course=1;
+    String valut="$";
 
     RequestQueue rq;
 
@@ -66,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     Context cont;
     EditText editText;
+    Button btnCourse;
 
     String name, img, price, edtext;
 
@@ -84,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         cont=this;
         edtext="";
         editText = findViewById(R.id.editTextTextPersonName2);
+        btnCourse = findViewById(R.id.button3);
         tableLayout = findViewById(R.id.table);
         inflater = LayoutInflater.from(this);
         showTable();
@@ -118,6 +124,27 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    public void getByn(){
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, urlCourse, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+
+                try {
+                    course = Double.parseDouble(response.getString("Cur_OfficialRate"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        rq.add(jsonObjectRequest);
+    }
+
     public void sendjsonrequest(int num) {
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url + num, null, new Response.Listener<JSONObject>() {
             @Override
@@ -138,7 +165,8 @@ public class MainActivity extends AppCompatActivity {
                         tv1 = (TextView) tr.getChildAt(1);
                         tv2 = (TextView) tr.getChildAt(2);
                         tv1.setText(name);
-                        tv2.setText(price+"$");
+                        ;
+                        tv2.setText(String.format("%.2f",(Double.parseDouble(price)*course))+valut);
                         tableLayout.addView(tr);
                     }
                 } catch (JSONException e) {
@@ -159,6 +187,20 @@ public class MainActivity extends AppCompatActivity {
     public void viewInfo(View view) {
         Intent intent = new Intent(this, InfoActivity.class);
         startActivity(intent);
+    }
+    public void updateCourse(View view) {
+        tableLayout.removeAllViews();
+        if(btnCourse.getText().toString().equals("USD")) {
+            course = 1;
+            valut="$";
+            btnCourse.setText("BYN");
+        } else {
+            valut="₽";
+            getByn();
+            btnCourse.setText("USD");
+        }
+        edtext = editText.getText().toString();
+        showTable();
     }
     public void viewSearch(View view) {
         tableLayout.removeAllViews();

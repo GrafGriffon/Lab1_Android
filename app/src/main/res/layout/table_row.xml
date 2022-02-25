@@ -8,7 +8,7 @@
         android:layout_width="121dp"
         android:layout_height="121dp"/>
     <TextView android:id="@+id/col1" android:text=""
-        android:layout_width="610px"
+        android:layout_width="580px"
         android:layout_height="wrap_content"
         android:textSize="16sp" />
     <TextView android:id="@+id/col2" android:text=""
