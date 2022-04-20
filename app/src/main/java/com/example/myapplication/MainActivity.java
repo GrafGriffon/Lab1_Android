@@ -1,138 +1,131 @@
 package com.example.myapplication;
 
+import static android.content.ContentValues.TAG;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GestureDetectorCompat;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.gms.common.AccountPicker;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+public class MainActivity extends AppCompatActivity {
 
-public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener {
-
-    int currentTup = 1;
-    private DBHelper helper;
-    private GestureDetectorCompat gd;
+    private SignInButton signInButton;
+    private GoogleSignInClient googleSignInClient;
+    private String TAG = "mainTag";
+    private FirebaseAuth mAuth;
+    private int RESULT_CODE_SINGIN = 999;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        helper = new DBHelper(this);
         setContentView(R.layout.activity_main);
-        gd = new GestureDetectorCompat(this, this);
-        updateScore();
+
+        signInButton = findViewById(R.id.SignIn_Button);
+        mAuth = FirebaseAuth.getInstance();
+        GoogleSignInOptions gso = new
+                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("517213944964-f7o2dgeutd7ksvei4sj4if061bet1e18.apps.googleusercontent.com")
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent singInIntent = googleSignInClient.getSignInIntent();
+                startActivityForResult(singInIntent, RESULT_CODE_SINGIN);
+            }
+        });
+        getSupportActionBar().hide();
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event){
-        gd.onTouchEvent(event);
-        return super.onTouchEvent(event);
-    }
-
-    public void sendMessage(View view) {
-        TextView textView = (TextView) findViewById(R.id.textViewScore);
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "FeedTheCat: My result - "+ Integer.parseInt(textView.getText().toString()));
-        sendIntent.setType("text/plain");
-        startActivity(sendIntent);
-    }
-
-    public void sendClick(View view) {
-
-        TextView textView = (TextView) findViewById(R.id.textViewScore);
-        if (currentTup % 15 == 0) {
-            Date currentDate = new Date();
-            DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-            String dateText = dateFormat.format(currentDate);
-            DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-            String timeText = timeFormat.format(currentDate);
-            String date = dateText + "--" + timeText;
-            ImageView img = (ImageView) findViewById(R.id.imageView);
-
-            RotateAnimation anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-            anim.setInterpolator(new LinearInterpolator());
-            anim.setRepeatCount(1 / 2);
-            anim.setDuration(700);
-            img.startAnimation(anim);
-            int num = Integer.parseInt(textView.getText().toString());
-            num++;
-            helper.addData(date,num+"","user");
-            textView.setText(num + "");
+    public void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser!=null) {
+            Toast.makeText(MainActivity.this, "Вы авторизованы", Toast.LENGTH_LONG).show();
+            UpdateUI(currentUser);
         }
-        currentTup++;
-    }
-
-    public void viewTable(View view) {
-        Intent intent = new Intent(this, InfoActivity.class);
-        startActivity(intent);
     }
 
     @Override
-    public boolean onDown(MotionEvent motionEvent) {
-        return false;
-    }
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    @Override
-    public void onShowPress(MotionEvent motionEvent) {
-
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent motionEvent) {
-        return false;
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-        return false;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent motionEvent) {
-        Intent intent = new Intent(this, TableActivity.class);
-        startActivity(intent);
-    }
-
-    @Override
-    public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-        return false;
-    }
-
-    private void updateScore(){
-        DBHelper dbHelper = new DBHelper(this);
-        Cursor query = dbHelper.getData();
-        String num = null;
-        while (query.moveToNext()) {
-            num=query.getString(2);
+        if (requestCode == RESULT_CODE_SINGIN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
         }
-        TextView textView = (TextView) findViewById(R.id.textViewScore);
-        textView.setText(num);
-        query.close();
+    }
+
+
+    private void handleSignInResult(Task<GoogleSignInAccount> task) {
+
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            Toast.makeText(MainActivity.this, "Signed In successfully", Toast.LENGTH_LONG).show();
+            FirebaseGoogleAuth(account);
+
+        } catch (ApiException e) {
+            e.printStackTrace();
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+            Toast.makeText(MainActivity.this, "SignIn Failed!!!", Toast.LENGTH_LONG).show();
+            FirebaseGoogleAuth(null);
+        }
+    }
+
+    private void FirebaseGoogleAuth(GoogleSignInAccount account) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(MainActivity.this, "successful", Toast.LENGTH_LONG).show();
+                    FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                    UpdateUI(firebaseUser);
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed!", Toast.LENGTH_LONG).show();
+                    UpdateUI(null);
+                }
+            }
+        });
+    }
+
+    private void UpdateUI(FirebaseUser fUser) {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+        if (account != null) {
+            String personName = account.getDisplayName();
+            String personEmail = account.getEmail();
+
+            Toast.makeText(MainActivity.this, personName + "  " + personEmail, Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, CatActivity.class);
+            startActivity(intent);
+        }
     }
 }
+
+//FirebaseAuth.getInstance().signOut();
